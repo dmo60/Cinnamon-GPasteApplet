@@ -68,7 +68,8 @@ MyApplet.prototype = {
 			Applet.IconApplet.prototype._init.call(this, orientation);
 
 			try {        
-				this.set_applet_icon_name("edit-paste");
+				//this.set_applet_icon_name("edit-paste");
+				this.set_applet_icon_symbolic_name("edit-paste");
 				this.set_applet_tooltip(_("GPaste clipboard"));
 
 				this.menuManager = new PopupMenu.PopupMenuManager(this);

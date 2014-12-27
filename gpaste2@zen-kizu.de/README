@@ -1,15 +1,25 @@
-This is a port of the GPaste Gnome-Shell extension.
+This is a continuation of dmo60's port of the GPaste Gnome Shell extension.
 
-GPaste is a clipboard management tool, this applet lets you access your clipboard through an icon in the panel.
+GPaste is a clipboard management tool. This applet lets you access your clipboard through an icon in the panel.
 
 
 Installation
 ================
 	
-	You might have to install the GPaste deamon first!
-	Have a look at the GPaste Github page: https://github.com/Keruspe/GPaste
-	Or install it via the Webupd8 PPA as described here: http://www.webupd8.org/2011/10/install-gpaste-in-ubuntu-native-gnome.html
-	
-	1) Copy the folder "gpaste@dmo60.de" to "~/.local/share/cinnamon/applets/".
-	
-	2) Enable the applet in cinnamon settings. (Eventually you have to restart cinnamon: Press Alt+F2, type 'r' and enter)
+For this applet to work, it is necessary that the GPaste daemon is installed!
+
+GPaste Github page:
+    – https://github.com/Keruspe/GPaste
+
+Ubuntu, Linux Mint, etc. users may install it via the Webupd8 PPA as described here:
+    – http://www.webupd8.org/2011/10/install-gpaste-in-ubuntu-native-gnome.html
+
+For Arch Linux, Manjaro, Antergos, etc. users there's an AUR package available:
+    – https://aur.archlinux.org/packages/gpaste-daemon/
+
+
+To install the applet itself, perform the following steps:
+
+    1. Copy the folder "gpaste2@zen-kizu.de" to "~/.local/share/cinnamon/applets/".
+    2. Enable the applet.
+    3. You might have to restart Cinnamon: Press Alt+F2, type 'r' (without ') and hit enter.

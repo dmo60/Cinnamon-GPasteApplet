@@ -14,30 +14,32 @@ const BUS_NAME = 'org.gnome.GPaste';
 const OBJECT_PATH = '/org/gnome/GPaste';
 
 const GPasteInterface =
-    <interface name="org.gnome.GPaste">
-        <method name="GetHistory">
-            <arg type="as" direction="out" />
-        </method>
-        <method name="Select">
-            <arg type="u" direction="in" />
-        </method>
-        <method name="Delete">
-            <arg type="u" direction="in" />
-        </method>
-        <method name="Empty" />
-        <method name="Track">
-            <arg type="b" direction="in" />
-        </method>
-        <method name="OnExtensionStateChanged">
-            <arg type="b" direction="in" />
-        </method>
-        <signal name="Changed" />
-        <signal name="ToggleHistory" />
-        <signal name="Tracking">
-            <arg type="b" direction="out" />
-        </signal>
-        <property name="Active" type="b" access="read" />
-    </interface>;
+    '<node>\
+        <interface name="org.gnome.GPaste">\
+            <method name="GetHistory">\
+                <arg type="as" direction="out" />\
+            </method>\
+            <method name="Select">\
+                <arg type="u" direction="in" />\
+            </method>\
+            <method name="Delete">\
+                <arg type="u" direction="in" />\
+            </method>\
+            <method name="Empty" />\
+            <method name="Track">\
+                <arg type="b" direction="in" />\
+            </method>\
+            <method name="OnExtensionStateChanged">\
+                <arg type="b" direction="in" />\
+            </method>\
+            <signal name="Changed" />\
+            <signal name="ToggleHistory" />\
+            <signal name="Tracking">\
+                <arg type="b" direction="out" />\
+            </signal>\
+            <property name="Active" type="b" access="read" />\
+        </interface>\
+    </node>';
 const GPasteProxy = Gio.DBusProxy.makeProxyWrapper(GPasteInterface);
 
 

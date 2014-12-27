@@ -3,5 +3,5 @@
 "name":        "GPaste 2",
 "description": "Continuation of the GPaste applet by dmo60. Shows contents of your clipboard",
 "icon":        "edit-paste",
-"version":     "1.0", 
+"version":     "1.0"
 }

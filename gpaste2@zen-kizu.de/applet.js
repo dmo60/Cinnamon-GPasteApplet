@@ -67,146 +67,146 @@ MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
     _init: function(orientation) {
-	    Applet.IconApplet.prototype._init.call(this, orientation);
+        Applet.IconApplet.prototype._init.call(this, orientation);
 
-	    try {        
-		    //this.set_applet_icon_name("edit-paste");
-		    this.set_applet_icon_symbolic_name("edit-paste");
-		    this.set_applet_tooltip(_("GPaste clipboard"));
+        try {        
+            //this.set_applet_icon_name("edit-paste");
+            this.set_applet_icon_symbolic_name("edit-paste");
+            this.set_applet_tooltip(_("GPaste clipboard"));
 
-		    this.menuManager = new PopupMenu.PopupMenuManager(this);
-		    this.menu = new MyMenu(this, orientation);
-		    this.menuManager.addMenu(this.menu);
+            this.menuManager = new PopupMenu.PopupMenuManager(this);
+            this.menu = new MyMenu(this, orientation);
+            this.menuManager.addMenu(this.menu);
 
-		    this._killSwitch = new PopupMenu.PopupSwitchMenuItem(_("Track changes"), true);
-		    this._killSwitch.connect('toggled', Lang.bind(this, this._toggleDaemon));
-		    this._proxy = new GPasteProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH);
-		    this._proxy.connectSignal('Changed', Lang.bind(this, this._updateHistory));
-		    this._proxy.connectSignal('ToggleHistory', Lang.bind(this, this._toggleHistory));
-		    this._proxy.connectSignal('Tracking', Lang.bind(this, function(proxy, sender, [trackingState]) {
-			    this._trackingStateChanged(trackingState);
-		    }));
-		    this._createHistory();
-		    this._noHistory = new PopupMenu.PopupMenuItem("");
-		    this._noHistory.setSensitive(false);
-		    this._emptyHistory = new PopupMenu.PopupMenuItem(_("Empty history"));
-		    this._emptyHistory.connect('activate', Lang.bind(this, this._empty));
-		    this._fillMenu();
-	    }
-	    catch (e) {
-		    global.logError(e);
-	    };
+            this._killSwitch = new PopupMenu.PopupSwitchMenuItem(_("Track changes"), true);
+            this._killSwitch.connect('toggled', Lang.bind(this, this._toggleDaemon));
+            this._proxy = new GPasteProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH);
+            this._proxy.connectSignal('Changed', Lang.bind(this, this._updateHistory));
+            this._proxy.connectSignal('ToggleHistory', Lang.bind(this, this._toggleHistory));
+            this._proxy.connectSignal('Tracking', Lang.bind(this, function(proxy, sender, [trackingState]) {
+                this._trackingStateChanged(trackingState);
+            }));
+            this._createHistory();
+            this._noHistory = new PopupMenu.PopupMenuItem("");
+            this._noHistory.setSensitive(false);
+            this._emptyHistory = new PopupMenu.PopupMenuItem(_("Empty history"));
+            this._emptyHistory.connect('activate', Lang.bind(this, this._empty));
+            this._fillMenu();
+        }
+        catch (e) {
+            global.logError(e);
+        };
     },
 
     on_applet_clicked: function(event) {
-	    this.menu.toggle();        
+        this.menu.toggle();        
     },
 
     _select: function(index) {
-	    this._proxy.SelectRemote(index);
+        this._proxy.SelectRemote(index);
     },
 
     _delete: function(index) {
-	    this._proxy.DeleteRemote(index);
+        this._proxy.DeleteRemote(index);
     },
 
     _empty: function() {
-	    this._proxy.EmptyRemote();
+        this._proxy.EmptyRemote();
     },
 
     _trackingStateChanged: function(trackingState) {
-	    this._killSwitch.setToggleState(trackingState);
+        this._killSwitch.setToggleState(trackingState);
     },
 
     _toggleDaemon: function() {
-	    this._proxy.TrackRemote(this._killSwitch.state);
+        this._proxy.TrackRemote(this._killSwitch.state);
     },
 
     _fillMenu: function() {
-	    let active = this._proxy.Active;
-	    if (active != null) {
-		    this._killSwitch.setToggleState(active);
+        let active = this._proxy.Active;
+        if (active != null) {
+            this._killSwitch.setToggleState(active);
         }
-	    this.menu.addMenuItem(this._killSwitch);
-	    this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-	    this._addHistoryItems();
-	    this.menu.addMenuItem(this._noHistory);
-	    this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-	    this.menu.addMenuItem(this._emptyHistory);
-	    this.menu.addCommandlineAction(_("GPaste daemon settings"), '/usr/lib/gpaste/gpaste-settings');
-	    this._updateHistory();
+        this.menu.addMenuItem(this._killSwitch);
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this._addHistoryItems();
+        this.menu.addMenuItem(this._noHistory);
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.menu.addMenuItem(this._emptyHistory);
+        this.menu.addCommandlineAction(_("GPaste daemon settings"), '/usr/lib/gpaste/gpaste-settings');
+        this._updateHistory();
     },
 
     _updateHistory: function() {
-	    this._proxy.GetHistoryRemote(Lang.bind(this, function(result, err) {
-		    let [history] = err ? [null] : result;
-		    if (history != null && history.length != 0) {
-			    let limit = Math.min(history.length, this._history.length);
-			    for (let index = 0; index < limit; ++index) {
-				    this._updateHistoryItem(index, history[index]);
+        this._proxy.GetHistoryRemote(Lang.bind(this, function(result, err) {
+            let [history] = err ? [null] : result;
+            if (history != null && history.length != 0) {
+                let limit = Math.min(history.length, this._history.length);
+                for (let index = 0; index < limit; ++index) {
+                    this._updateHistoryItem(index, history[index]);
                 }
-			    this._hideHistory(limit);
-			    this._noHistory.actor.hide();
-			    this._emptyHistory.actor.show();
-		    } else {
-			    this._noHistory.label.text = (history == null) ? _("(Couldn't connect to GPaste daemon)") : _("(Empty)");
-			    this._hideHistory();
-			    this._emptyHistory.actor.hide();
-			    this._noHistory.actor.show();
-		    }
-	    }));
+                this._hideHistory(limit);
+                this._noHistory.actor.hide();
+                this._emptyHistory.actor.show();
+            } else {
+                this._noHistory.label.text = (history == null) ? _("(Couldn't connect to GPaste daemon)") : _("(Empty)");
+                this._hideHistory();
+                this._emptyHistory.actor.hide();
+                this._noHistory.actor.show();
+            }
+        }));
     },
 
     _toggleHistory: function() {
-	    this.menu.toggle();
+        this.menu.toggle();
     },
 
     _createHistoryItem: function(index) {
-	    let item = new PopupMenu.PopupAlternatingMenuItem("");
-	    item.actor.set_style_class_name('popup-menu-item');
-	    let label = item.label;
-	    label.clutter_text.max_length = 60;
-	    label.clutter_text.ellipsize = Pango.EllipsizeMode.END;
-	    item.connect('activate', Lang.bind(this, function(actor, event) {
-		    if (item.state == PopupMenu.PopupAlternatingMenuItemState.DEFAULT) {
-			    this._select(index);
-			    return false;
-		    } else {
-			    this._delete(index);
-			    return true;
-		    }
-	    }));
-	    return item;
+        let item = new PopupMenu.PopupAlternatingMenuItem("");
+        item.actor.set_style_class_name('popup-menu-item');
+        let label = item.label;
+        label.clutter_text.max_length = 60;
+        label.clutter_text.ellipsize = Pango.EllipsizeMode.END;
+        item.connect('activate', Lang.bind(this, function(actor, event) {
+            if (item.state == PopupMenu.PopupAlternatingMenuItemState.DEFAULT) {
+                this._select(index);
+                return false;
+            } else {
+                this._delete(index);
+                return true;
+            }
+        }));
+        return item;
     },
 
     _createHistory: function() {
-	    this._history = [];
-	    for (let index = 0; index < 20; ++index) {
-		    this._history[index] = this._createHistoryItem(index);
+        this._history = [];
+        for (let index = 0; index < 20; ++index) {
+            this._history[index] = this._createHistoryItem(index);
         }
-	    this._history[0].actor.set_style("font-weight: bold;");
+        this._history[0].actor.set_style("font-weight: bold;");
     },
 
     _addHistoryItems: function() {
-	    for (let index = 0; index < this._history.length; ++index)
-		    this.menu.addMenuItem(this._history[index]);
+        for (let index = 0; index < this._history.length; ++index)
+            this.menu.addMenuItem(this._history[index]);
     },
 
     _updateHistoryItem: function(index, element) {
-	    let displayStr = element.replace(/\n/g, ' ');
-	    let altDisplayStr = _("delete: %s").format(displayStr);
-	    this._history[index].updateText(displayStr, altDisplayStr);
-	    this._history[index].actor.show();
+        let displayStr = element.replace(/\n/g, ' ');
+        let altDisplayStr = _("delete: %s").format(displayStr);
+        this._history[index].updateText(displayStr, altDisplayStr);
+        this._history[index].actor.show();
     },
 
     _hideHistory: function(startIndex) {
-	    for (let index = startIndex || 0; index < this._history.length; ++index) {
-		    this._history[index].actor.hide();
+        for (let index = startIndex || 0; index < this._history.length; ++index) {
+            this._history[index].actor.hide();
         }
     },
 
     _onStateChanged: function (state) {
-	    this._proxy.OnExtensionStateChangedRemote(state);
+        this._proxy.OnExtensionStateChangedRemote(state);
     }
 };
 

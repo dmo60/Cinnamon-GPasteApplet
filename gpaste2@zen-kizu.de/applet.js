@@ -2,6 +2,7 @@
 const Main        = imports.ui.main;
 //const Panel = imports.ui.panel;
 const Lang        = imports.lang;
+const St          = imports.gi.St;
 const Gio         = imports.gi.Gio;
 const Pango       = imports.gi.Pango;
 //const PanelMenu = imports.ui.panelMenu;
@@ -59,33 +60,79 @@ MyMenu.prototype = {
     }
 };
 
-function MyApplet(orientation) {
+const HistoryMenuItemAction = {
+    DEFAULT: 0,
+    DELETE:  1
+}
+
+function HistoryMenuItem(place) {
+    this._init(place);
+}
+
+HistoryMenuItem.prototype = {
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+
+    _init: function(text) {
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
+
+        this.label                         = new St.Label({ text: text });
+        this.label.clutter_text.max_length = 60;
+        this.label.clutter_text.ellipsize  = Pango.EllipsizeMode.END;
+        this.addActor(this.label);
+
+        let deleteIcon   = new St.Icon({ icon_name:   'edit-delete',
+                                         icon_type:   St.IconType.SYMBOLIC,
+                                         style_class: 'popup-menu-icon ' });
+        let deleteButton = new St.Button({ child: deleteIcon });
+        deleteButton.connect('clicked', Lang.bind(this, this._delete));
+        this.addActor(deleteButton, { expand: false, span: -1, align: St.Align.END });
+    },
+
+    _delete: function() {
+        this.action = HistoryMenuItemAction.DELETE;
+
+        PopupMenu.PopupBaseMenuItem.prototype.activate.call(this, null);
+    },
+
+    activate: function(event) {
+        this.action = HistoryMenuItemAction.DEFAULT;
+
+        PopupMenu.PopupBaseMenuItem.prototype.activate.call(this, event);
+    },
+
+    updateText: function(text) {
+        this.label.set_text(text);
+    }
+};
+
+function GPasteApplet(orientation) {
     this._init(orientation);
 }
 
-MyApplet.prototype = {
+GPasteApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
     _init: function(orientation) {
         Applet.IconApplet.prototype._init.call(this, orientation);
 
-        try {        
-            //this.set_applet_icon_name("edit-paste");
+        try {
             this.set_applet_icon_symbolic_name("edit-paste");
             this.set_applet_tooltip(_("GPaste clipboard"));
 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new MyMenu(this, orientation);
+            this.menu        = new MyMenu(this, orientation);
             this.menuManager.addMenu(this.menu);
 
             this._killSwitch = new PopupMenu.PopupSwitchMenuItem(_("Track changes"), true);
             this._killSwitch.connect('toggled', Lang.bind(this, this._toggleDaemon));
+
             this._proxy = new GPasteProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH);
             this._proxy.connectSignal('Changed', Lang.bind(this, this._updateHistory));
             this._proxy.connectSignal('ToggleHistory', Lang.bind(this, this._toggleHistory));
             this._proxy.connectSignal('Tracking', Lang.bind(this, function(proxy, sender, [trackingState]) {
                 this._trackingStateChanged(trackingState);
             }));
+
             this._createHistory();
             this._noHistory = new PopupMenu.PopupMenuItem("");
             this._noHistory.setSensitive(false);
@@ -162,13 +209,10 @@ MyApplet.prototype = {
     },
 
     _createHistoryItem: function(index) {
-        let item = new PopupMenu.PopupAlternatingMenuItem("");
+        let item = new HistoryMenuItem("");
         item.actor.set_style_class_name('popup-menu-item');
-        let label = item.label;
-        label.clutter_text.max_length = 60;
-        label.clutter_text.ellipsize = Pango.EllipsizeMode.END;
         item.connect('activate', Lang.bind(this, function(actor, event) {
-            if (item.state == PopupMenu.PopupAlternatingMenuItemState.DEFAULT) {
+            if (item.action == HistoryMenuItemAction.DEFAULT) {
                 this._select(index);
                 return false;
             } else {
@@ -188,14 +232,13 @@ MyApplet.prototype = {
     },
 
     _addHistoryItems: function() {
-        for (let index = 0; index < this._history.length; ++index)
+        for (let index = 0; index < this._history.length; ++index) {
             this.menu.addMenuItem(this._history[index]);
+        }
     },
 
     _updateHistoryItem: function(index, element) {
-        let displayStr = element.replace(/\n/g, ' ');
-        let altDisplayStr = _("delete: %s").format(displayStr);
-        this._history[index].updateText(displayStr, altDisplayStr);
+        this._history[index].updateText(element.replace(/\n/g, ' '));
         this._history[index].actor.show();
     },
 
@@ -211,7 +254,7 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation) {  
-    let myApplet = new MyApplet(orientation);
-    return myApplet;      
+    let applet = new GPasteApplet(orientation);
+    return applet;      
 };
 
